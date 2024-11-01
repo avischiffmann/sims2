@@ -85,7 +85,7 @@ export default function Chat() {
         handleDevelopment();
         setProactiveCount(prevCount => prevCount + 1);
       }
-    }, 15000);
+    }, 10000);
 
     setLullTimeout(timeout);
 
