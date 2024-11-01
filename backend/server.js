@@ -9,10 +9,11 @@ app.use(express.json());
 
 const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY;
 const nameCache = new Set();
-const MAX_CACHE_SIZE = 50;
+const MAX_CACHE_SIZE = 50; // Adjust size as needed
+
 app.get('/initial-greeting', async (req, res) => {
   try {
-    
+    // First request for name
     let generatedName;
     let attempts = 0;
     const MAX_ATTEMPTS = 3;
@@ -48,16 +49,16 @@ app.get('/initial-greeting', async (req, res) => {
       attempts++;
     } while (nameCache.has(generatedName) && attempts < MAX_ATTEMPTS);
 
-    
+    // Add name to cache
     nameCache.add(generatedName);
     
-    
+    // Remove oldest name if cache is too large
     if (nameCache.size > MAX_CACHE_SIZE) {
       const firstItem = nameCache.values().next().value;
       nameCache.delete(firstItem);
     }
 
-    
+    // Second request for greeting
     const greetingResponse = await axios.post(
       'https://api.together.xyz/v1/chat/completions',
       {
@@ -97,7 +98,7 @@ app.post('/chat', async (req, res) => {
   try {
     const { message, messageHistory, characterName } = req.body;
     
-    
+    // Prepare the messages array for the API
     const messages = [
       {
         role: 'system',
@@ -143,7 +144,7 @@ You are ${characterName}, a 29-year-old girl who's flirty, playful, and always r
         if (retries === 0) {
           throw error;
         }
-        
+        // Wait for 1 second before retrying
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
@@ -153,6 +154,45 @@ You are ${characterName}, a 29-year-old girl who's flirty, playful, and always r
       error: 'Failed to get response',
       details: error.message 
     });
+  }
+});
+
+app.post('/story-development', async (req, res) => {
+  try {
+    const { messageHistory, characterName } = req.body;
+    console.log(`Proactive message triggered for character: ${characterName}`);
+
+    const response = await axios.post(
+      'https://api.together.xyz/v1/chat/completions',
+      {
+        model: 'meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are generating a story development for an ongoing conversation. The development should be related to the initial situation and previous developments, adding new dramatic elements or complications. Keep the response under 16 words and make it feel natural and conversational. It should feel like a quick update you are texting the user.'
+          },
+          ...messageHistory,
+          {
+            role: 'user',
+            content: 'Add a new development to your situation that builds on what you previously shared. Make it emotionally engaging and create more opportunity for dialogue. Keep the response under 16 words and make it feel natural and conversational. It should feel like a quick update you are texting the user.'
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.9
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${TOGETHER_API_KEY}`
+        }
+      }
+    );
+
+    console.log(`Proactive message response for ${characterName}: ${response.data.choices[0].message.content}`);
+    res.json({ response: response.data.choices[0].message.content });
+  } catch (error) {
+    console.error('Error getting story development:', error);
+    res.status(500).json({ error: 'Failed to get story development' });
   }
 });
 

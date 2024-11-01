@@ -24,6 +24,11 @@ export default function Chat() {
   const [chatStartTime, setChatStartTime] = useState<number>(Date.now());
   const [displayTime, setDisplayTime] = useState<string>("Just met");
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const [isAutoDeveloping, setIsAutoDeveloping] = useState(true);
+  const [lastUserMessageTime, setLastUserMessageTime] = useState<number>(Date.now());
+  const [lullTimeout, setLullTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [proactiveSent, setProactiveSent] = useState(false);
+  const [proactiveCount, setProactiveCount] = useState(0);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -70,11 +75,29 @@ export default function Chat() {
     getInitialGreeting();
   }, []);
 
+  useEffect(() => {
+    if (lullTimeout) {
+      clearTimeout(lullTimeout);
+    }
+
+    const timeout = setTimeout(() => {
+      if (messages.length > 0 && proactiveCount < 2) {
+        handleDevelopment();
+        setProactiveCount(prevCount => prevCount + 1);
+      }
+    }, 15000);
+
+    setLullTimeout(timeout);
+
+    return () => clearTimeout(timeout);
+  }, [lastUserMessageTime, messages, proactiveCount]);
+
   const handleBlock = async () => {
     setIsLoading(true);
     setMessages([]);
     setCharacterName('Loading...');
     setChatStartTime(Date.now());
+    setProactiveSent(false);
     
     try {
       const response = await fetch('http://localhost:3001/initial-greeting');
@@ -111,6 +134,8 @@ export default function Chat() {
 
     setMessages(prevMessages => [...prevMessages, userMessage]);
     setInput('');
+    setLastUserMessageTime(Date.now());
+    setProactiveCount(0);
 
     try {
       const response = await fetch('http://localhost:3001/chat', {
@@ -147,6 +172,41 @@ export default function Chat() {
     }
   };
 
+  const handleDevelopment = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/story-development', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messageHistory: messages.map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'assistant',
+            content: msg.content
+          })),
+          characterName: characterName
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.response) {
+        const aiMessage: Message = {
+          id: Date.now().toString(),
+          content: data.response,
+          sender: 'ai',
+        };
+        setMessages(prevMessages => [...prevMessages, aiMessage]);
+      }
+    } catch (error) {
+      console.error('Error getting story development:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen max-w-2xl mx-auto">
       <div className="p-4 border-b flex items-center justify-between bg-white">
@@ -159,12 +219,14 @@ export default function Chat() {
             <span className="w-2 h-2 bg-green-500 rounded-full"></span>
           </div>
         </div>
-        <button 
-          onClick={handleBlock}
-          className="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          Block
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={handleBlock}
+            className="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+          >
+            Block
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
