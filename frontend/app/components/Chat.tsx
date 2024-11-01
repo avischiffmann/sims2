@@ -73,7 +73,7 @@ export default function Chat() {
   const handleBlock = async () => {
     setIsLoading(true);
     setMessages([]);
-    setCharacterName('Loading...'); // Reset the name immediately
+    setCharacterName('Loading...');
     setChatStartTime(Date.now());
     
     try {
@@ -94,7 +94,7 @@ export default function Chat() {
       }
     } catch (error) {
       console.error('Error getting initial greeting:', error);
-      setCharacterName('Error'); // Handle error state
+      setCharacterName('Error');
     } finally {
       setIsLoading(false);
     }

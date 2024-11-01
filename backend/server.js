@@ -9,11 +9,10 @@ app.use(express.json());
 
 const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY;
 const nameCache = new Set();
-const MAX_CACHE_SIZE = 50; // Adjust size as needed
-
+const MAX_CACHE_SIZE = 50;
 app.get('/initial-greeting', async (req, res) => {
   try {
-    // First request for name
+    
     let generatedName;
     let attempts = 0;
     const MAX_ATTEMPTS = 3;
@@ -49,16 +48,16 @@ app.get('/initial-greeting', async (req, res) => {
       attempts++;
     } while (nameCache.has(generatedName) && attempts < MAX_ATTEMPTS);
 
-    // Add name to cache
+    
     nameCache.add(generatedName);
     
-    // Remove oldest name if cache is too large
+    
     if (nameCache.size > MAX_CACHE_SIZE) {
       const firstItem = nameCache.values().next().value;
       nameCache.delete(firstItem);
     }
 
-    // Second request for greeting
+    
     const greetingResponse = await axios.post(
       'https://api.together.xyz/v1/chat/completions',
       {
@@ -98,7 +97,7 @@ app.post('/chat', async (req, res) => {
   try {
     const { message, messageHistory, characterName } = req.body;
     
-    // Prepare the messages array for the API
+    
     const messages = [
       {
         role: 'system',
@@ -144,7 +143,7 @@ You are ${characterName}, a 29-year-old girl who's flirty, playful, and always r
         if (retries === 0) {
           throw error;
         }
-        // Wait for 1 second before retrying
+        
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
