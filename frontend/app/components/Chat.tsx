@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 
 const formatTimeSince = (startTime: number): string => {
   const seconds = Math.floor((Date.now() - startTime) / 1000);
@@ -30,6 +31,7 @@ export default function Chat() {
   const [proactiveSent, setProactiveSent] = useState(false);
   const [proactiveCount, setProactiveCount] = useState(0);
   const [chattedCharacters, setChattedCharacters] = useState<{ [key: string]: number }>({});
+  const [isAiTyping, setIsAiTyping] = useState(false);
 
   useEffect(() => {
     const storedData = localStorage.getItem('chattedCharacters');
@@ -157,6 +159,7 @@ export default function Chat() {
     setInput('');
     setLastUserMessageTime(Date.now());
     setProactiveCount(0);
+    setIsAiTyping(true);
 
     try {
       const response = await fetch('http://localhost:3001/chat', {
@@ -190,10 +193,13 @@ export default function Chat() {
       }
     } catch (error) {
       console.error('Error sending message:', error);
+    } finally {
+      setIsAiTyping(false);
     }
   };
 
   const handleDevelopment = async () => {
+    setIsAiTyping(true);
     try {
       const response = await fetch('http://localhost:3001/story-development', {
         method: 'POST',
@@ -225,6 +231,8 @@ export default function Chat() {
       }
     } catch (error) {
       console.error('Error getting story development:', error);
+    } finally {
+      setIsAiTyping(false);
     }
   };
 
@@ -249,7 +257,7 @@ export default function Chat() {
                 localStorage.clear();
                 setChattedCharacters({});
               }}
-              className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+              className="px-2 py-1 text-sm bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
             >
               Clear History
             </button>
@@ -281,7 +289,7 @@ export default function Chat() {
           <div className="flex gap-2">
             <button 
               onClick={handleBlock}
-              className="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              className="px-4 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
             >
               Block
             </button>
@@ -298,20 +306,37 @@ export default function Chat() {
               </div>
             </div>
           ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`p-4 rounded-lg font-miller ${
-                  message.sender === 'user'
-                    ? 'bg-blue-500 text-white ml-auto'
-                    : 'bg-gray-200 text-black'
-                } max-w-[80%]`}
-              >
-                {message.content}
-              </div>
-            ))
+            <>
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`p-4 rounded-2xl max-w-[80%] ${
+                      message.sender === 'user'
+                        ? 'bg-blue-500 text-white rounded-br-sm'
+                        : 'bg-gray-100 text-black rounded-bl-sm'
+                    } shadow-sm`}
+                  >
+                    {message.content}
+                  </div>
+                </div>
+              ))}
+              {isAiTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 p-4 rounded-2xl rounded-bl-sm max-w-[80%] shadow-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </>
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         <div className="p-4 border-t">
@@ -321,14 +346,19 @@ export default function Chat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-              className="flex-1 p-2 border border-gray-300 rounded"
+              className="flex-1 p-2 pl-4 border border-gray-300 rounded-full"
               placeholder="Type your message..."
             />
             <button
               onClick={sendMessage}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              disabled={!input.trim()}
+              className={`p-2 rounded-full ${
+                input.trim() 
+                  ? 'bg-blue-500 hover:bg-blue-600 text-white' 
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
             >
-              Send
+              <PaperAirplaneIcon className="h-5 w-5" />
             </button>
           </div>
         </div>
