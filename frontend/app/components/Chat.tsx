@@ -240,27 +240,33 @@ export default function Chat() {
 
   return (
     <div className="flex h-screen">
-      <div className="w-64 border-r bg-white p-4 overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Chat History</h2>
-          <button 
-            onClick={() => {
-              localStorage.clear();
-              setChattedCharacters({});
-            }}
-            className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Clear History
-          </button>
-        </div>
-        {Object.entries(chattedCharacters).map(([name, seconds]) => (
-          <div key={name} className="mb-2 p-2 border-b">
-            <div className="font-medium">{name}</div>
-            <div className="text-sm text-gray-500">
-              {Math.floor(seconds / 60)} minutes {seconds % 60} seconds
-            </div>
+      <div className="w-64 border-r bg-white p-4 flex flex-col h-full">
+        <div className="flex-1">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Chat History</h2>
+            <button 
+              onClick={() => {
+                localStorage.clear();
+                setChattedCharacters({});
+              }}
+              className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Clear History
+            </button>
           </div>
-        ))}
+          {Object.entries(chattedCharacters).map(([name, seconds]) => (
+            <div key={name} className="mb-2 p-2 border-b">
+              <div className="font-medium">{name}</div>
+              <div className="text-sm text-gray-500">
+                {Math.floor(seconds / 60)} minutes {seconds % 60} seconds
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="text-sm text-gray-400 mt-auto pt-4">
+          friend.com
+        </div>
       </div>
 
       <div className="flex flex-col h-screen max-w-2xl mx-auto flex-grow">
