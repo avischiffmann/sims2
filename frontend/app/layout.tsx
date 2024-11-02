@@ -12,6 +12,16 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
   weight: "100 900",
 });
+const miller = localFont({
+  src: [
+    {
+      path: '../app/fonts/MillerText-Roman.woff2',
+      weight: '400',
+      style: 'normal',
+    }
+  ],
+  variable: '--font-miller'
+})
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -24,12 +34,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${miller.variable} antialiased`}>
+      <body>{children}</body>
     </html>
   );
 }

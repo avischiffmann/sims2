@@ -106,7 +106,7 @@ export default function Chat() {
         handleDevelopment();
         setProactiveCount(prevCount => prevCount + 1);
       }
-    }, 10000);
+    }, proactiveCount === 0 ? 10000 : 35000);
 
     setLullTimeout(timeout);
 
@@ -264,7 +264,7 @@ export default function Chat() {
           ))}
         </div>
         
-        <div className="text-sm text-gray-400 mt-auto pt-4">
+        <div className="text-sm text-gray-400 mt-auto pt-4 font-miller">
           friend.com
         </div>
       </div>
@@ -273,7 +273,7 @@ export default function Chat() {
         <div className="p-4 border-b flex items-center justify-between bg-white">
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-semibold">{characterName}</h1>
+              <h1 className="text-xl font-semibold font-georgia">{characterName}</h1>
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
             </div>
             <span className="text-sm text-gray-500">{displayTime}</span>
@@ -301,7 +301,7 @@ export default function Chat() {
             messages.map((message) => (
               <div
                 key={message.id}
-                className={`p-4 rounded-lg ${
+                className={`p-4 rounded-lg font-miller ${
                   message.sender === 'user'
                     ? 'bg-blue-500 text-white ml-auto'
                     : 'bg-gray-200 text-black'
