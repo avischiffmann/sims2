@@ -72,7 +72,7 @@ export default function Chat() {
     const getInitialGreeting = async () => {
       try {
         setChatStartTime(Date.now());
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/initial-greeting`);
+        const response = await fetch('http://localhost:3001/initial-greeting');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -123,7 +123,7 @@ export default function Chat() {
     setProactiveSent(false);
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/initial-greeting`);
+      const response = await fetch('http://localhost:3001/initial-greeting');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -162,7 +162,7 @@ export default function Chat() {
     setIsAiTyping(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/chat`, {
+      const response = await fetch('http://localhost:3001/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -201,7 +201,7 @@ export default function Chat() {
   const handleDevelopment = async () => {
     setIsAiTyping(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/story-development`, {
+      const response = await fetch('http://localhost:3001/story-development', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
